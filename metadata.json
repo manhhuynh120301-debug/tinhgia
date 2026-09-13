@@ -1,0 +1,6 @@
+{
+  "name": "3D Price Calculator",
+  "description": "Ứng dụng tính giá vốn in 3D nhanh, giá bán lẻ, giá sỉ theo số lượng và tối ưu giá đăng bán TikTok Shop.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
