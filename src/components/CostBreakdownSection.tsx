@@ -42,13 +42,23 @@ export const CostBreakdownSection: React.FC<CostBreakdownSectionProps> = ({
             Tổng giá vốn sản xuất (1 sản phẩm)
           </span>
           <p className="text-xs text-slate-400 mt-0.5">
-            Tổng cộng: Tiền nhựa + Tiền điện + Chi phí máy + Phụ trợ
+            {breakdown.itemsPerPlate > 1
+              ? `Đã chia đều cho ${breakdown.itemsPerPlate} mẫu trên bàn in (Tiền nhựa + Điện + Máy + Phụ trợ)`
+              : 'Tổng cộng: Tiền nhựa + Tiền điện + Chi phí máy + Phụ trợ'}
           </p>
         </div>
         <div className="text-left sm:text-right">
           <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white block">
             {formatVND(breakdown.totalProductionCost)}
           </span>
+          {breakdown.itemsPerPlate > 1 && (
+            <span className="text-xs font-mono text-slate-400 block mt-0.5">
+              Cả bàn in ({breakdown.itemsPerPlate} mẫu):{' '}
+              <span className="text-teal-300 font-semibold">
+                {formatVND(breakdown.plateTotalCost)}
+              </span>
+            </span>
+          )}
         </div>
       </div>
 
@@ -68,7 +78,9 @@ export const CostBreakdownSection: React.FC<CostBreakdownSectionProps> = ({
               {formatVND(breakdown.materialCost)}
             </div>
             <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-              {formatNumberVN(params.filamentWeightGrams)}g × 150đ
+              {breakdown.itemsPerPlate > 1
+                ? `${formatNumberVN(breakdown.unitFilamentGrams, 1)}g/SP × 150đ (${formatNumberVN(params.filamentWeightGrams)}g ÷ ${breakdown.itemsPerPlate})`
+                : `${formatNumberVN(params.filamentWeightGrams)}g × 150đ`}
             </p>
           </div>
         </div>
@@ -87,7 +99,7 @@ export const CostBreakdownSection: React.FC<CostBreakdownSectionProps> = ({
               {formatVND(breakdown.electricityCost)}
             </div>
             <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-              ({formatNumberVN(params.filamentWeightGrams)} / 1000) × 4.000đ
+              ({formatNumberVN(breakdown.unitFilamentGrams, 1)}g / 1000) × 4.000đ
             </p>
           </div>
         </div>
@@ -106,7 +118,9 @@ export const CostBreakdownSection: React.FC<CostBreakdownSectionProps> = ({
               {formatVND(breakdown.machineCost)}
             </div>
             <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-              {formatNumberVN(params.printingTimeHours, 2)} giờ × 2.500đ
+              {breakdown.itemsPerPlate > 1
+                ? `${formatNumberVN(breakdown.unitPrintingHours, 2)}h/SP × 2.500đ (${formatNumberVN(params.printingTimeHours, 1)}h ÷ ${breakdown.itemsPerPlate})`
+                : `${formatNumberVN(params.printingTimeHours, 2)} giờ × 2.500đ`}
             </p>
           </div>
         </div>

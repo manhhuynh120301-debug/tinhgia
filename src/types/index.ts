@@ -19,9 +19,10 @@ export const ALLOWED_DIFFERENCE = 500; // VND allowed difference for TikTok solv
 // ==========================================
 
 export interface PrintingParams {
-  filamentWeightGrams: number; // e.g. 64g
-  printingTimeHours: number; // e.g. 4h
-  quantity: number; // e.g. 1
+  filamentWeightGrams: number; // e.g. 64g (Khối lượng nhựa bàn in)
+  printingTimeHours: number; // e.g. 4h (Thời gian in bàn in)
+  itemsPerPlate: number; // e.g. 1 (Số lượng mẫu trên bàn in)
+  quantity: number; // e.g. 1 (Số lượng khách đặt)
 }
 
 export interface AdditionalCosts {
@@ -30,11 +31,21 @@ export interface AdditionalCosts {
 }
 
 export interface ProductionCostResult {
-  materialCost: number; // Filament Weight * 150
-  electricityCost: number; // (Filament Weight / 1000) * 4000
-  machineCost: number; // Printing Hours * 2500
-  additionalCost: number; // packagingCost + otherCost
-  totalProductionCost: number; // sum of above
+  // Unit costs (Chi phí cho 1 sản phẩm)
+  materialCost: number; // Tiền nhựa 1 SP
+  electricityCost: number; // Tiền điện 1 SP
+  machineCost: number; // Khấu hao máy 1 SP
+  additionalCost: number; // Phụ trợ (đóng gói + khác) 1 SP
+  totalProductionCost: number; // Tổng giá vốn 1 SP
+  
+  // Plate totals (Toàn bộ bàn in)
+  itemsPerPlate: number;
+  unitFilamentGrams: number;
+  unitPrintingHours: number;
+  plateMaterialCost: number;
+  plateElectricityCost: number;
+  plateMachineCost: number;
+  plateTotalCost: number;
 }
 
 export type WholesaleTierId = 'retail' | 'wholesale_50' | 'wholesale_100';

@@ -21,6 +21,7 @@ import { loadTikTokFeeSettings, saveTikTokFeeSettings } from './lib/storage';
 const DEFAULT_PARAMS: PrintingParams = {
   filamentWeightGrams: 64,
   printingTimeHours: 4,
+  itemsPerPlate: 1,
   quantity: 1,
 };
 

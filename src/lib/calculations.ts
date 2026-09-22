@@ -68,35 +68,50 @@ export function roundToPracticalVND(rawAmount: number): number {
  * Calculates itemized manufacturing cost breakdown for a 3D printed product.
  *
  * Formula:
- * - Material Cost = Filament Weight * 150 VND
- * - Electricity Cost = (Filament Weight / 1000) * 4000 VND
- * - Machine Cost = Printing Hours * 2500 VND
+ * - Material Cost (1 SP) = (Filament Weight / Items per Plate) * 150 VND
+ * - Electricity Cost (1 SP) = ((Filament Weight / Items per Plate) / 1000) * 4000 VND
+ * - Machine Cost (1 SP) = (Printing Hours / Items per Plate) * 2500 VND
  * - Additional Costs = Packaging + Other
- * - Total Production Cost = Sum of above
+ * - Total Production Cost (1 SP) = Sum of above
  */
 export function calculateProductionCost(
   params: PrintingParams,
   additional: AdditionalCosts
 ): ProductionCostResult {
-  const weight = Math.max(0, params.filamentWeightGrams || 0);
-  const hours = Math.max(0, params.printingTimeHours || 0);
+  const itemsPerPlate = Math.max(1, Math.floor(params.itemsPerPlate || 1));
+  const plateWeight = Math.max(0, params.filamentWeightGrams || 0);
+  const plateHours = Math.max(0, params.printingTimeHours || 0);
   const packaging = Math.max(0, additional.packagingCost || 0);
   const other = Math.max(0, additional.otherCost || 0);
 
-  // 1. Material cost
-  const materialCost = weight * FILAMENT_PRICE_PER_GRAM;
+  // Per-unit values (chia đều cho số lượng mẫu trên bàn in)
+  const unitFilamentGrams = plateWeight / itemsPerPlate;
+  const unitPrintingHours = plateHours / itemsPerPlate;
 
-  // 2. Electricity cost
-  const electricityCost = (weight / 1000) * ELECTRICITY_COST_PER_KG;
+  // 1. Material cost per unit
+  const materialCost = unitFilamentGrams * FILAMENT_PRICE_PER_GRAM;
 
-  // 3. Machine hourly cost
-  const machineCost = hours * MACHINE_COST_PER_HOUR;
+  // 2. Electricity cost per unit
+  const electricityCost = (unitFilamentGrams / 1000) * ELECTRICITY_COST_PER_KG;
 
-  // 4. Additional costs
+  // 3. Machine hourly cost per unit
+  const machineCost = unitPrintingHours * MACHINE_COST_PER_HOUR;
+
+  // 4. Additional costs (bao bì, phụ trợ tính cho 1 SP hoàn thiện)
   const additionalCost = packaging + other;
 
-  // 5. Total production cost per unit
+  // 5. Total production cost per unit (Giá vốn 1 sản phẩm)
   const totalProductionCost = materialCost + electricityCost + machineCost + additionalCost;
+
+  // Plate total costs (Chi phí toàn bộ bàn in)
+  const plateMaterialCost = plateWeight * FILAMENT_PRICE_PER_GRAM;
+  const plateElectricityCost = (plateWeight / 1000) * ELECTRICITY_COST_PER_KG;
+  const plateMachineCost = plateHours * MACHINE_COST_PER_HOUR;
+  const plateTotalCost =
+    plateMaterialCost +
+    plateElectricityCost +
+    plateMachineCost +
+    additionalCost * itemsPerPlate;
 
   return {
     materialCost,
@@ -104,6 +119,13 @@ export function calculateProductionCost(
     machineCost,
     additionalCost,
     totalProductionCost,
+    itemsPerPlate,
+    unitFilamentGrams,
+    unitPrintingHours,
+    plateMaterialCost,
+    plateElectricityCost,
+    plateMachineCost,
+    plateTotalCost,
   };
 }
 
