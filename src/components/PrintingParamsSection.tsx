@@ -4,18 +4,33 @@
  */
 
 import React from 'react';
-import { Scale, Clock, Boxes, PackageCheck, Info } from 'lucide-react';
+import { Scale, Clock, Boxes, PackageCheck, Info, FileBox, Sparkles, X } from 'lucide-react';
 import { PrintingParams } from '../types';
-import { formatNumberVN } from '../lib/formatters';
+import { formatNumberVN, formatSecondsDuration } from '../lib/formatters';
+
+export interface ImportedSourceSummary {
+  fileName: string;
+  slicer?: string;
+  printer?: string;
+  plateCount: number;
+  selectedPlateNames: string[];
+  totalPrintTimeSeconds: number;
+}
 
 interface PrintingParamsSectionProps {
   params: PrintingParams;
   onChange: (updated: Partial<PrintingParams>) => void;
+  onOpenThreeMFModal: () => void;
+  importedSourceSummary?: ImportedSourceSummary | null;
+  onClearImportedSource?: () => void;
 }
 
 export const PrintingParamsSection: React.FC<PrintingParamsSectionProps> = ({
   params,
   onChange,
+  onOpenThreeMFModal,
+  importedSourceSummary,
+  onClearImportedSource,
 }) => {
   const itemsPerPlate = Math.max(1, params.itemsPerPlate || 1);
   const unitWeight = params.filamentWeightGrams / itemsPerPlate;
@@ -23,20 +38,87 @@ export const PrintingParamsSection: React.FC<PrintingParamsSectionProps> = ({
 
   return (
     <section className="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-lg shadow-black/40 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+      {/* Header with 3MF Import Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/30 flex items-center justify-center font-bold text-xs">
             1
           </div>
-          <h2 className="text-sm sm:text-base font-bold text-slate-100 uppercase tracking-wide">
-            Thông số in 3D
-          </h2>
+          <div>
+            <h2 className="text-sm sm:text-base font-bold text-slate-100 uppercase tracking-wide">
+              Thông số in 3D
+            </h2>
+            <span className="text-[11px] text-slate-400 font-mono">
+              Nhập thủ công hoặc trích xuất tự động từ file .3MF
+            </span>
+          </div>
         </div>
-        <span className="text-[11px] text-slate-400 font-mono">
-          Nhập thông số từ phần mềm cắt lớp (Slicer)
-        </span>
+
+        {/* Action Button: Import .3MF */}
+        <button
+          type="button"
+          onClick={onOpenThreeMFModal}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500/20 via-cyan-500/20 to-teal-500/20 hover:from-teal-500/30 hover:to-cyan-500/30 border border-teal-500/40 text-teal-300 hover:text-white text-xs font-bold transition-all shadow-sm hover:shadow-teal-500/20 cursor-pointer"
+        >
+          <FileBox className="w-4 h-4 text-teal-400" />
+          <span>Import File .3MF</span>
+          <span className="hidden md:inline text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
+            Orca • Bambu • Creality • Prusa
+          </span>
+        </button>
       </div>
+
+      {/* Active 3MF Sync Banner */}
+      {importedSourceSummary && (
+        <div className="bg-teal-950/40 border border-teal-500/40 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-inner">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-teal-300 flex items-center gap-2">
+                <span>Đã nạp số liệu từ: {importedSourceSummary.fileName}</span>
+                {importedSourceSummary.slicer && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">
+                    {importedSourceSummary.slicer}
+                  </span>
+                )}
+                {importedSourceSummary.printer && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                    {importedSourceSummary.printer}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {importedSourceSummary.plateCount} bàn in ({importedSourceSummary.selectedPlateNames.join(', ')}) •{' '}
+                {importedSourceSummary.totalPrintTimeSeconds > 0 &&
+                  `${formatSecondsDuration(importedSourceSummary.totalPrintTimeSeconds)} • `}
+                {formatNumberVN(params.filamentWeightGrams, 1)}g nhựa • {params.itemsPerPlate} mẫu
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+            <button
+              type="button"
+              onClick={onOpenThreeMFModal}
+              className="text-xs text-teal-300 hover:text-white underline font-medium cursor-pointer"
+            >
+              Xem / Đổi plate
+            </button>
+            {onClearImportedSource && (
+              <button
+                type="button"
+                onClick={onClearImportedSource}
+                title="Bỏ liên kết file 3MF"
+                className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Inputs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

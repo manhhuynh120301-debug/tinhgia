@@ -4,13 +4,14 @@
  */
 
 import React from 'react';
-import { Box, RotateCcw, Sparkles } from 'lucide-react';
+import { Box, RotateCcw, Sparkles, FileBox } from 'lucide-react';
 
 interface HeaderProps {
   onReset: () => void;
+  onOpenThreeMFModal?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onReset }) => {
+export const Header: React.FC<HeaderProps> = ({ onReset, onOpenThreeMFModal }) => {
   return (
     <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 shadow-lg shadow-black/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
@@ -37,6 +38,18 @@ export const Header: React.FC<HeaderProps> = ({ onReset }) => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {onOpenThreeMFModal && (
+            <button
+              type="button"
+              onClick={onOpenThreeMFModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-teal-300 hover:text-white bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 rounded-xl transition-all cursor-pointer shadow-sm shadow-teal-500/10"
+              title="Import file 3MF từ Bambu Studio, OrcaSlicer, Creality Print, PrusaSlicer"
+            >
+              <FileBox className="w-3.5 h-3.5 text-teal-400" />
+              <span>Import .3MF</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onReset}

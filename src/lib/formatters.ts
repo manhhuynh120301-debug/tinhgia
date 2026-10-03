@@ -58,6 +58,26 @@ export function formatPrintingTime(hours: number): string {
 }
 
 /**
+ * Format seconds into human readable duration (e.g. "5h 42m 30s", "45m 12s", "30s").
+ */
+export function formatSecondsDuration(totalSeconds: number): string {
+  if (isNaN(totalSeconds) || totalSeconds <= 0) return '0s';
+  const sec = Math.round(totalSeconds);
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+
+  const parts: string[] = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0 || d > 0) parts.push(`${h}h`);
+  if (m > 0 || h > 0 || d > 0) parts.push(`${m}m`);
+  parts.push(`${s}s`);
+
+  return parts.join(' ');
+}
+
+/**
  * Format weight in grams with optional kg note.
  * Example: 1250 -> "1.250g (1,25 kg)"
  */

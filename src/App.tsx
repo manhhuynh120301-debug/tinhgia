@@ -6,12 +6,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { TopSummaryCards } from './components/TopSummaryCards';
-import { PrintingParamsSection } from './components/PrintingParamsSection';
+import { PrintingParamsSection, ImportedSourceSummary } from './components/PrintingParamsSection';
 import { AdditionalCostsSection } from './components/AdditionalCostsSection';
 import { CostBreakdownSection } from './components/CostBreakdownSection';
 import { RetailPricingSection } from './components/RetailPricingSection';
 import { WholesaleSection } from './components/WholesaleSection';
 import { TikTokShopSection } from './components/TikTokShopSection';
+import { ThreeMFImportModal } from './components/ThreeMF/ThreeMFImportModal';
 
 import { PrintingParams, AdditionalCosts, TikTokFeeSettings, DEFAULT_RETAIL_PRICE_MULTIPLIER } from './types';
 import { calculateProductionCost, calculatePricingAndWholesale } from './lib/calculations';
@@ -36,6 +37,8 @@ export function App() {
   const [retailMultiplier, setRetailMultiplier] = useState<number>(DEFAULT_RETAIL_PRICE_MULTIPLIER);
   const [isTikTokEnabled, setIsTikTokEnabled] = useState<boolean>(true);
   const [tiktokFees, setTiktokFees] = useState<TikTokFeeSettings>(DEFAULT_TIKTOK_FEES);
+  const [isThreeMFModalOpen, setIsThreeMFModalOpen] = useState<boolean>(false);
+  const [importedSourceSummary, setImportedSourceSummary] = useState<ImportedSourceSummary | null>(null);
 
   // Load fee settings on mount
   useEffect(() => {
@@ -73,6 +76,23 @@ export function App() {
     setParams(DEFAULT_PARAMS);
     setAdditionalCosts(DEFAULT_ADDITIONAL_COSTS);
     setRetailMultiplier(DEFAULT_RETAIL_PRICE_MULTIPLIER);
+    setImportedSourceSummary(null);
+  };
+
+  // Apply parsed 3MF metrics to the calculator
+  const handleApplyThreeMFData = (data: {
+    filamentWeightGrams: number;
+    printingTimeHours: number;
+    itemsPerPlate: number;
+    sourceSummary: ImportedSourceSummary;
+  }) => {
+    setParams((prev) => ({
+      ...prev,
+      filamentWeightGrams: data.filamentWeightGrams,
+      printingTimeHours: data.printingTimeHours,
+      itemsPerPlate: data.itemsPerPlate,
+    }));
+    setImportedSourceSummary(data.sourceSummary);
   };
 
   // 1. Calculate production cost
@@ -109,7 +129,10 @@ export function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Top Header */}
-      <Header onReset={handleResetAll} />
+      <Header
+        onReset={handleResetAll}
+        onOpenThreeMFModal={() => setIsThreeMFModalOpen(true)}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
@@ -125,6 +148,9 @@ export function App() {
         <PrintingParamsSection
           params={params}
           onChange={handleParamsChange}
+          onOpenThreeMFModal={() => setIsThreeMFModalOpen(true)}
+          importedSourceSummary={importedSourceSummary}
+          onClearImportedSource={() => setImportedSourceSummary(null)}
         />
 
         {/* 2. Chi phí phụ trợ */}
@@ -176,6 +202,13 @@ export function App() {
           </span>
         </div>
       </footer>
+
+      {/* 3MF File Import & Inspection Modal */}
+      <ThreeMFImportModal
+        isOpen={isThreeMFModalOpen}
+        onClose={() => setIsThreeMFModalOpen(false)}
+        onApplyData={handleApplyThreeMFData}
+      />
     </div>
   );
 }
